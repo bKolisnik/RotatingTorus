@@ -22,8 +22,8 @@ import math
 
 #To rotate this torus about the x-axis by A and z-axis by B we right-multiply the appropriate rotation matrices by our point vector.
 
-screen_width = 50
-screen_height = 50
+screen_width = 35
+screen_height = 20
 theta_spacing = 0.07 # we don't need as many point on our circle for each phi
 phi_spacing = 0.02 # we need to sample more phis to create the illusion of the torus
 illumination = [".",",","-","~",":",";","=","!","*","#","$","@"]
@@ -48,7 +48,7 @@ illumination = [".",",","-","~",":",";","=","!","*","#","$","@"]
 
 R1 = 1 #circle radius of 1 unit
 R2 = 2 # torus radius (from origin to circle center) of 2 units
-K2 = 5 #torus will be 5 units in front of origin
+K2 = 8 #torus will be 8 units in front of origin
 
 #Calculate K1 based on screen size: the maximum x-distance occurs
 #roughly at the edge of the torus, which is at x=R1+R2, z=0.  we
@@ -119,8 +119,17 @@ def render_frame():
             #We will take the dot product between our light vector and our Normal vector on our torus.
             L = sintheta + sinphi*costheta # L ranges from -sqrt(2) to sqrt(2) since our lighting vector had magnitude or sqrt(2) and is being dotted with unit vector.
 
-            if xp == 43 and yp == 25:
-                p = 1
+            if xp == 30 and yp ==17:
+                p=1
+
+            if xp == 31 and yp ==17:
+                p=1
+
+            if xp == 32 and yp ==17:
+                p=1
+
+            if xp == 33 and yp ==17:
+                p=1
 
             if L > 0:
                 #if point is facing away from the light source does not need to be rendered.
