@@ -23,7 +23,7 @@ import math
 #To rotate this torus about the x-axis by A and z-axis by B we right-multiply the appropriate rotation matrices by our point vector.
 
 screen_width = 35
-screen_height = 20
+screen_height = 35
 theta_spacing = 0.07 # we don't need as many point on our circle for each phi
 phi_spacing = 0.02 # we need to sample more phis to create the illusion of the torus
 illumination = [".",",","-","~",":",";","=","!","*","#","$","@"]
@@ -72,8 +72,8 @@ def decimal_range(start, stop, increment):
         yield start
         start += increment
 
-def render_frame():
-    #cosA, cosB, sinA, sinB = math.cos(A), math.cos(B), math.sin(A), math.sin(B)
+def render_frame(A, B):
+    cosA, cosB, sinA, sinB = math.cos(A), math.cos(B), math.sin(A), math.sin(B)
     output = [[' ']*screen_height for i in range(screen_width)] # width x height
     zbuffer = [[0]*screen_height for i in range(screen_width)] # width x height
 
@@ -96,9 +96,9 @@ def render_frame():
             circlex = R2 + R1*costheta
             circley = R1*sintheta
 
-            x = circlex*cosphi
-            y = circley
-            z = K2 -sinphi*circlex #Adding K2 so that our circle origin is K2 units in z-direction from screen.
+            x = circlex*(cosB*cosphi - sinA*sinB*sinphi) +circley*cosA*sinB
+            y = circlex*(-1*sinB*cosphi - sinA*cosB*sinphi) +circley*cosA*cosB
+            z = K2 -cosA*circlex*sinphi - circley*sinA #Adding K2 so that our circle origin is K2 units in z-direction from screen.
 
             #calculate 1/z
             ooz = 1/z
@@ -111,26 +111,16 @@ def render_frame():
             #caculating luminance. We need to know the surface normal.
             #for a parametric surface this is the normalized cross product of the partial derivatives with respect to u and v. Ensure it is the outwards facing normal.
             #alternatively you can an outwards normal vector to a cirle can be derived. is is N = [cos(theta),sin(theta),0]. Then we can rotate this normal by the rotation matrices appropriately.
-            #rotating it about the y-axis gives [cos(theta)cos(phi), sin(theta), -sin(phi)cos(theta)]
+            #rotating it about the y-axis gives [cos(theta)cos(phi), sin(theta), -sin(phi)cos(theta)]. We can then rotate it about the x and z axis to achieve the normal for the rotated torus.
 
             #we will have the light vector point to (0,1,-1) so objects facing up and behind the viewer will be lit. 
             #this vector is usually normalized for dot product comparisons but we will compensate later.
 
             #We will take the dot product between our light vector and our Normal vector on our torus.
-            L = sintheta + sinphi*costheta # L ranges from -sqrt(2) to sqrt(2) since our lighting vector had magnitude or sqrt(2) and is being dotted with unit vector.
+            # L ranges from -sqrt(2) to sqrt(2) since our lighting vector had magnitude or sqrt(2) and is being dotted with unit vector.
 
-            if xp == 30 and yp ==17:
-                p=1
-
-            if xp == 31 and yp ==17:
-                p=1
-
-            if xp == 32 and yp ==17:
-                p=1
-
-            if xp == 33 and yp ==17:
-                p=1
-
+            L = -cosphi*costheta*sinB + cosA*costheta*sinphi + sinA*sintheta + cosB*(cosA*sintheta - costheta*sinA*sinphi)
+            
             if L > 0:
                 #if point is facing away from the light source does not need to be rendered.
                 if ooz > zbuffer[xp][yp]:
@@ -157,13 +147,16 @@ def pprint(frame_buffer):
 if __name__ == "__main__":
     print('\x1b[2J') # clear the screen
     print(f"K1: {K1}")
-    frame_buffer = render_frame()
+    A, B = 0, 0
+    for i in range(250):
+        pprint(render_frame(A, B))
+        A += 0.08
+        B += 0.03
     '''
     with open('my_donut.txt','w') as fp:
         for y in range(len(frame_buffer[0])):
             for x in range(len(frame_buffer)):
                 fp.write(frame_buffer[x][y])
-            fp.write("\n")'''
-    pprint(frame_buffer)     
+            fp.write("\n")'''    
 
     #nots about first attempt
