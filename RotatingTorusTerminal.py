@@ -58,27 +58,14 @@ K2 = 8 #torus will be 8 units in front of origin
 #screen_width*K2*3/(8*(R1+R2)) = K1
 #there should be 1/8 the width of the screen on either side of the donut.
 
-#we want the torus to be shown at 
-#K1x = screen_width*(K2)*3/(8*(R1+R2))
-#K1x = 30
-#K1y = screen_height*(K2)*3/(8*(R1+R2))
-
 K1 = screen_width*K2*3/(8*(R1+R2))
-#K1y = screen_width*K2*3/(8*(R1+R2))
 
-#need this as cannot use for loops with floats in python
-def decimal_range(start, stop, increment):
-    while start < stop: # and not math.isclose(start, stop): Py>3.5
-        yield start
-        start += increment
 
 def render_frame(A, B):
     cosA, cosB, sinA, sinB = math.cos(A), math.cos(B), math.sin(A), math.sin(B)
     output = [[' ']*screen_height for i in range(screen_width)] # width x height
     zbuffer = [[0]*screen_height for i in range(screen_width)] # width x height
 
-    #print(len(output))
-    #print(len(output[0]))
 
     #sweep over theta for the cross-sectional circle of the torus
     theta = 0
@@ -109,9 +96,9 @@ def render_frame(A, B):
             yp = int(screen_height/2 - K1*ooz*y)
 
             #caculating luminance. We need to know the surface normal.
-            #for a parametric surface this is the normalized cross product of the partial derivatives with respect to u and v. Ensure it is the outwards facing normal.
+            #for a parametric surface this is the normalized cross product of the partial derivatives with respect to theta and phi. Ensure it is the outwards facing normal.
             #alternatively you can an outwards normal vector to a cirle can be derived. is is N = [cos(theta),sin(theta),0]. Then we can rotate this normal by the rotation matrices appropriately.
-            #rotating it about the y-axis gives [cos(theta)cos(phi), sin(theta), -sin(phi)cos(theta)]. We can then rotate it about the x and z axis to achieve the normal for the rotated torus.
+            #rotating it about the y-axis gives [cos(theta)cos(phi), sin(theta), -sin(phi)cos(theta)]. We can then rotate this normal for the torus about the x and z axis to achieve the normal for the rotated torus.
 
             #we will have the light vector point to (0,1,-1) so objects facing up and behind the viewer will be lit. 
             #this vector is usually normalized for dot product comparisons but we will compensate later.
@@ -140,9 +127,7 @@ def pprint(frame_buffer):
         for x in range(len(frame_buffer)):
             print(frame_buffer[x][y],end='')
         print("\n",end='')
-    
-    
-    #print(*[" ".join(row) for row in frame_buffer], sep="\n")
+
 
 if __name__ == "__main__":
     print('\x1b[2J') # clear the screen
@@ -152,11 +137,3 @@ if __name__ == "__main__":
         pprint(render_frame(A, B))
         A += 0.08
         B += 0.03
-    '''
-    with open('my_donut.txt','w') as fp:
-        for y in range(len(frame_buffer[0])):
-            for x in range(len(frame_buffer)):
-                fp.write(frame_buffer[x][y])
-            fp.write("\n")'''    
-
-    #nots about first attempt
