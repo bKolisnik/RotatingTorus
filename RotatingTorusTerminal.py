@@ -1,4 +1,7 @@
 import math
+import sys
+
+esc = '\033'
 # A Torus is a 3d solid of revolution. We can rotate a cricle around an axis to draw the Torus.
 
 # Equation of circle is (x-a)^2 + (y-b)^2 = r^2
@@ -22,8 +25,8 @@ import math
 
 #To rotate this torus about the x-axis by A and z-axis by B we right-multiply the appropriate rotation matrices by our point vector.
 
-screen_width = 35
-screen_height = 35
+screen_width = 80
+screen_height = 24
 theta_spacing = 0.07 # we don't need as many point on our circle for each phi
 phi_spacing = 0.02 # we need to sample more phis to create the illusion of the torus
 illumination = [".",",","-","~",":",";","=","!","*","#","$","@"]
@@ -48,7 +51,8 @@ illumination = [".",",","-","~",":",";","=","!","*","#","$","@"]
 
 R1 = 1 #circle radius of 1 unit
 R2 = 2 # torus radius (from origin to circle center) of 2 units
-K2 = 8 #torus will be 8 units in front of origin
+K2 = 5 #torus will be 10 units in front of origin 
+#K1 needs to be less than K2
 
 #Calculate K1 based on screen size: the maximum x-distance occurs
 #roughly at the edge of the torus, which is at x=R1+R2, z=0.  we
@@ -58,7 +62,12 @@ K2 = 8 #torus will be 8 units in front of origin
 #screen_width*K2*3/(8*(R1+R2)) = K1
 #there should be 1/8 the width of the screen on either side of the donut.
 
-K1 = screen_width*K2*3/(8*(R1+R2))
+K1y = screen_height*(K2)*3/(8*(R1+R2)) # K1y = 15
+
+#K1 should be one number which is the distance from the user to the screen. 
+# However,to compensate for the fact that the pixels are taller than they are wide we will maintain separate K1 for x and y direction. 
+# The K1 in the x direction will be twice as large.
+K1x = 2*K1y # 30
 
 
 def render_frame(A, B):
@@ -92,15 +101,15 @@ def render_frame(A, B):
             #in our terminal 0,0 will be top left corner and y-axis will point down.
             
             #we want to plot donut in the middle of the terminal so we will translate donut coordinates. Additionally, y axis will point down in screen space so we multiply y-coordinate by -1.
-            xp = int(screen_width/2 + K1*ooz*x)
-            yp = int(screen_height/2 - K1*ooz*y)
+            xp = int(screen_width/2 + K1x*ooz*x)
+            yp = int(screen_height/2 - K1y*ooz*y)
 
             #caculating luminance. We need to know the surface normal.
             #for a parametric surface this is the normalized cross product of the partial derivatives with respect to theta and phi. Ensure it is the outwards facing normal.
             #alternatively you can an outwards normal vector to a cirle can be derived. is is N = [cos(theta),sin(theta),0]. Then we can rotate this normal by the rotation matrices appropriately.
-            #rotating it about the y-axis gives [cos(theta)cos(phi), sin(theta), -sin(phi)cos(theta)]. We can then rotate this normal for the torus about the x and z axis to achieve the normal for the rotated torus.
+            #rotating it about the y-axis gives [cos(theta)cos(phi), sin(theta), -sin(phi)cos(theta)]. We can then rotate this normal for the torus about the x and z axis using rotation matrices to achieve the normal for the rotated torus.
 
-            #we will have the light vector point to (0,1,-1) so objects facing up and behind the viewer will be lit. 
+            #We will have the light vector point to (0,1,-1) so objects facing up and behind the viewer will be lit. 
             #this vector is usually normalized for dot product comparisons but we will compensate later.
 
             #We will take the dot product between our light vector and our Normal vector on our torus.
@@ -122,18 +131,30 @@ def render_frame(A, B):
 
 
 def pprint(frame_buffer):
-
+    #print('\x1b[3J')
+    print(esc+'[H')
     for y in range(len(frame_buffer[0])):
         for x in range(len(frame_buffer)):
             print(frame_buffer[x][y],end='')
         print("\n",end='')
 
 
+def hide_cursor():
+    print(esc+'[?25l')
+
+def show_cursor():
+    print(esc+'[?12l'+esc+'[?25h')
+
 if __name__ == "__main__":
-    print('\x1b[2J') # clear the screen
-    print(f"K1: {K1}")
-    A, B = 0, 0
-    for i in range(250):
-        pprint(render_frame(A, B))
-        A += 0.08
-        B += 0.03
+    try:
+
+        print('\x1b[2J') # clear the screen
+        #print(f"K1: {K1}")
+        A, B = 0, 0
+        for i in range(250):
+            pprint(render_frame(A, B))
+
+            A += 0.08
+            B += 0.03
+    finally:
+        show_cursor()
